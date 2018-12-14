@@ -27,6 +27,8 @@ public class Main {
     private JFrame frame;
     
     private SwingWorker<?, ?> runWorker = null;
+    private volatile int runDelay = 200;
+    
     
     private Main() {
         SwingUtilities.invokeLater(this::initDB);
@@ -44,6 +46,12 @@ public class Main {
         var run = new JButton("Run");
         run.addActionListener(this::doRun);
         
+        var slow = new JButton("-");
+        slow.addActionListener(this::doSlow);
+        
+        var fast = new JButton("+");
+        fast.addActionListener(this::doFast);
+        
         var quit = new JButton("Quit");
         quit.addActionListener(this::doQuit);
         
@@ -52,6 +60,9 @@ public class Main {
         buttons.add(step);
         buttons.add(Box.createHorizontalStrut(20));
         buttons.add(run);
+        buttons.add(Box.createHorizontalStrut(10));
+        buttons.add(slow);
+        buttons.add(fast);
         buttons.add(Box.createHorizontalGlue());
         buttons.add(quit);
         buttons.add(Box.createHorizontalGlue());
@@ -64,8 +75,8 @@ public class Main {
                 doQuit(null);
             }
         });
+        frame.add(buttons, BorderLayout.NORTH);
         frame.add(panel, BorderLayout.CENTER);
-        frame.add(buttons, BorderLayout.SOUTH);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -88,7 +99,7 @@ public class Main {
                     try {
                         while (runWorker == this) {
                             publish(generateExpand());
-                            Thread.sleep(200);
+                            Thread.sleep(runDelay);
                         }
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
@@ -104,6 +115,24 @@ public class Main {
         } else {
             runWorker.cancel(true);
             runWorker = null;
+        }
+    }
+    
+    private void doSlow(ActionEvent ev) {
+        if (runWorker != null) {
+            runDelay *= 1.41;
+            if (runDelay > 1000) {
+                runDelay = 1000;
+            }
+        }
+    }
+    
+    private void doFast(ActionEvent ev) {
+        if (runWorker != null) {
+            runDelay /= 1.41;
+            if (runDelay < 3) {
+                runDelay = 3;
+            }
         }
     }
     
