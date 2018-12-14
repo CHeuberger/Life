@@ -71,6 +71,9 @@ public class LifePanel extends JComponent {
             if (grid) {
                 gg.setColor(Color.GRAY);
                 drawGrid(gg);
+            } else {
+                gg.setColor(Color.BLUE);
+                gg.drawRect(-1, -1, maxx+2, maxy+2);
             }
             
             gg.setColor(Color.BLACK);
@@ -107,16 +110,16 @@ public class LifePanel extends JComponent {
         var width = getWidth();
         var height = getHeight();
 
-        var stepx = (width-1) / life.w;
-        var stepy = (height-1) / life.h;
+        var stepx = (width-3) / life.w;
+        var stepy = (height-3) / life.h;
         step = Math.min(stepx, stepy);
         grid = step > 20;
 
         maxx = step * life.w;
         maxy = step * life.h;
 
-        offx = (width - maxx) / 2;
-        offy = (height - maxy) / 2;
+        offx = (width - maxx) / 2 + 1;
+        offy = (height - maxy) / 2 + 1;
     }
     
     private void doMouseClicked(MouseEvent ev) {
