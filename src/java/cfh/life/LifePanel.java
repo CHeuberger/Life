@@ -3,17 +3,59 @@ package cfh.life;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Objects;
 
 import javax.swing.JComponent;
+
+import cfh.life.Life.Listener;
 
 @SuppressWarnings("serial")
 public class LifePanel extends JComponent {
     
     private final Life life;
+    private int step;
+    private boolean grid;
+    private int offx;
+    private int offy;
+    private int maxx;
+    private int maxy;
     
     LifePanel(Life life) {
         this.life = Objects.requireNonNull(life);
+        life.addListener(new Listener() {
+            @Override
+            public void resized() {
+                doComponentResized();
+            }
+            @Override
+            public void changed() {
+                repaint();
+            }
+        });
+        
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent ev) {
+                doComponentResized();
+            }
+        });
+        
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent ev) {
+                doMouseClicked(ev);
+            }
+        });
+    }
+    
+    @Override
+    public void doLayout() {
+        super.doLayout();
+        doComponentResized();
     }
 
     @Override
@@ -23,44 +65,69 @@ public class LifePanel extends JComponent {
         var gg = (Graphics2D) g;
         try {
         
-            var width = getWidth();
-            var height = getHeight();
-
-            var stepx = (width-1) / life.w;
-            var stepy = (height-1) / life.h;
-            var step = Math.min(stepx, stepy);
-
-            var maxx = step * life.w;
-            var maxy = step * life.h;
-            var offx = (width - maxx) / 2;
-            var offy = (height - maxy) / 2;
-            var delta = 0;
             gg.translate(offx, offy);
 
-            if (step > 20) {
-                delta = 1;
+            if (grid) {
                 gg.setColor(Color.GRAY);
-                for (var y = 0; y <= maxy; y += step) {
-                    gg.drawLine(0, y, maxx, y);
-                }
-                for (var x = 0; x <= maxx; x += step) {
-                    gg.drawLine(x, 0, x, maxy);
-                }
+                drawGrid(gg);
             }
             
-            for (var j=0; j<life.h; j+=1) {
-                gg.setColor(Color.BLACK);
-                for (var i=0; i<life.w; i+=1) {
-                    if (life.data[j][i]) {
-                        var x = i*step;
-                        var y = j*step;
-                        gg.fillRect(x+delta, y+delta, step-delta, step-delta);
-                    }
-                }
-            }
+            gg.setColor(Color.BLACK);
+            drawData(gg);
             
         } finally {
             gg.dispose();
+        }
+    }
+
+    private void drawGrid(Graphics2D gg) {
+        for (var y = 0; y <= maxy; y += step) {
+            gg.drawLine(0, y, maxx, y);
+        }
+        for (var x = 0; x <= maxx; x += step) {
+            gg.drawLine(x, 0, x, maxy);
+        }
+    }
+
+    private void drawData(Graphics2D gg) {
+        var delta = grid ? 1 : 0;
+        for (var j = 0; j < life.h; j += 1) {
+            for (var i = 0; i < life.w; i += 1) {
+                if (life.data[j][i]) {
+                    var x = i*step;
+                    var y = j*step;
+                    gg.fillRect(x+delta, y+delta, step-delta, step-delta);
+                }
+            }
+        }
+    }
+    
+    private void doComponentResized() {
+        var width = getWidth();
+        var height = getHeight();
+
+        var stepx = (width-1) / life.w;
+        var stepy = (height-1) / life.h;
+        step = Math.min(stepx, stepy);
+        grid = step > 20;
+
+        maxx = step * life.w;
+        maxy = step * life.h;
+
+        offx = (width - maxx) / 2;
+        offy = (height - maxy) / 2;
+    }
+    
+    private void doMouseClicked(MouseEvent ev) {
+        if (ev.getButton() == ev.BUTTON1) {
+            if (ev.getX() >= offx && ev.getY() >= offy) {
+                var x = (ev.getX() - offx) / step;
+                var y = (ev.getY() - offy) / step;
+                if (0 <= x && x < life.w && 0 <= y && y < life.h) {
+                    life.data[y][x] ^= true;
+                }
+                repaint();
+            }
         }
     }
 }

@@ -1,5 +1,8 @@
 package cfh.life;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Life {
 
     int x;
@@ -9,6 +12,8 @@ public class Life {
     
     boolean[][] data;
     
+    private final List<Listener> listeners = new ArrayList<>();
+    
     
     Life(int width, int height) {
         x = 0;
@@ -16,5 +21,27 @@ public class Life {
         w = width;
         h = height;
         data = new boolean[h][w];
+    }
+    
+    void data(boolean[][] d) {
+        data = d;
+        listeners.forEach(Listener::changed);
+    }
+    
+    public void addListener(Listener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+    
+    public void removeListener(Listener listener) {
+        listeners.remove(listener);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static interface Listener {
+        void changed();
+        void resized();
     }
 }
