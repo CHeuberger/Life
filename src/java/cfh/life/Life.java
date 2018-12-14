@@ -25,6 +25,8 @@ public class Life {
     
     void data(boolean[][] d) {
         data = d;
+        h = d.length;
+        w = d[0].length;
         listeners.forEach(Listener::changed);
     }
     

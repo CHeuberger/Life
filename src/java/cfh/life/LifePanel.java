@@ -33,6 +33,7 @@ public class LifePanel extends JComponent {
             }
             @Override
             public void changed() {
+                doComponentResized();
                 repaint();
             }
         });
