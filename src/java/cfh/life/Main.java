@@ -3,6 +3,8 @@ package cfh.life;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +57,13 @@ public class Main {
         buttons.add(Box.createHorizontalGlue());
         
         frame = new JFrame("Life");
-        frame.setDefaultCloseOperation(frame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(frame.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent ev) {
+                doQuit(null);
+            }
+        });
         frame.add(panel, BorderLayout.CENTER);
         frame.add(buttons, BorderLayout.SOUTH);
         frame.pack();
@@ -100,6 +108,10 @@ public class Main {
     }
     
     private void doQuit(ActionEvent ev) {
+        if (runWorker != null) {
+            runWorker.cancel(true);
+            runWorker = null;
+        }
         frame.dispose();
     }
     
